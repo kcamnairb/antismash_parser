@@ -1,6 +1,6 @@
 # Antismash Results Parser
 
-This is an R script that parses an antismash results directory into a summary csv file. Antismash is a tool for identifying biosynthetic gene clusters in bacterial and fungal genomes. The summary csv file contains information on the cluster number, type, coordinates, and most similar known cluster for each gene cluster.
+This is an R script that parses an antismash results directory into a summary csv file. Antismash is a tool for identifying biosynthetic gene clusters in bacterial and fungal genomes. The summary csv file contains information on the cluster number, type, coordinates, the genes in the cluster, and the most similar known cluster for each gene cluster. This is able to parse results from antismash v5 - v7.
 
 ## Installation
 
@@ -12,4 +12,4 @@ To run the script, you need to provide two arguments: the path to the antismash 
 
 For example:
 
-`Rscript antismash_v7_parser.R /path/to/antismash/results output.csv`
+`Rscript antismash_parser.R /path/to/antismash/results output.csv`
