@@ -5,6 +5,7 @@ library(tidyverse)
 
 args = commandArgs(trailingOnly=TRUE)
 antismash_directory = args[1]
+output_file = args[2]
 parse_antismash_7 = function(antismash_directory){
   tables = read_html(paste0(antismash_directory, '/index.html')) %>% 
     html_table()
@@ -39,4 +40,4 @@ parse_antismash_7 = function(antismash_directory){
   clusters %>% left_join(region_chrom_and_gene, by='region')
 }
 antismash_results = parse_antismash_7(antismash_directory)
-antismash_results %>% write_csv(paste0(basename(antismash_directory), '_BGC_summary.csv', na=''))
+antismash_results %>% write_csv(output_file, na='')
