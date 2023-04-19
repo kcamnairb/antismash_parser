@@ -13,5 +13,7 @@ To run the script, you need to provide two arguments: the path to the antismash 
 For example:
 
 `Rscript antismash_parser.R /path/to/antismash/results output.csv`
+
 or 
+
 `Rscript antismash_parser.R --bed_file output.bed /path/to/antismash/results output.csv`
