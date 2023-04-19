@@ -5,7 +5,7 @@ library(janitor, quietly=TRUE)
 library(tidyverse, quietly=TRUE)
 library(argparser, quietly=TRUE)
 
-parser = arg_parser('Parse Antismash Results into a csv or optionally a bed file')
+parser = arg_parser('Parse Antismash results into a csv or optionally a bed file')
 parser = add_argument(parser, 'antismash_directory', help='antismash directory to parse')
 parser = add_argument(parser, 'output_csv', help='output csv file')
 parser = add_argument(parser, '--bed_file', help='output bed file')
