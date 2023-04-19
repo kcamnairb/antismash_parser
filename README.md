@@ -4,7 +4,7 @@ This is an R script that parses an antismash results directory into a summary cs
 
 ## Installation
 
-To use this script, you need to have R installed on your system. You also need to install the following R packages: tidyverse, rvest, and janitor. You can install them using the command `install.packages(c("tidyverse", "rvest", "janitor"))`.
+To use this script, you need to have R installed on your system. You also need to install the following R packages: tidyverse, rvest, janitor, and argparser. You can install them using the command `install.packages(c("tidyverse", "rvest", "janitor", "argparser"))`.
 
 ## Usage
 
