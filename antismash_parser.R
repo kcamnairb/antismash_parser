@@ -13,37 +13,45 @@ args =  parse_args(parser)
 antismash_directory = args$antismash_directory
 output_file = args$output_csv
 parse_antismash_7 = function(antismash_directory){
-  tables = read_html(paste0(antismash_directory, '/index.html')) %>% 
-    html_table()
-  clusters = tables %>% 
-    keep(~'Region' %in% colnames(.x)) %>%
-    map(~janitor::clean_names(.x) %>%
+  html = read_html(paste0(antismash_directory, '/index.html'))
+  text =  html %>% html_text()
+  chroms = str_match_all(text, '\\n(?<chrom>.+?)\\n\\n\\n\\n\\n\\n\\nRegion\\nType\\nFrom\\nTo\\nMost')[[1]] %>%
+    as_tibble(.name_repair='unique') %>% pull(chrom) %>% str_remove(' .*')
+  chroms = chroms[1:length(chroms)-1]
+  tables = html %>% html_table()
+  #clusters = tables %>% 
+  #  keep(~'Region' %in% colnames(.x))
+  clusters = tables[1:length(chroms)]
+  names(clusters) = chroms
+  clusters = clusters %>%
+    imap(~janitor::clean_names(.x) %>%
           rename(backbone_type = most_similar_known_cluster_2, start=from, end=to) %>%
           mutate(region = str_replace(region, 'Region&nbsp', 'region_')) %>%
           mutate(across(c(start, end), ~str_remove_all(.x, ',') %>% as.numeric())) %>%
-          mutate(similarity = str_remove(similarity, '%') %>% as.numeric())) %>%
+          mutate(similarity = str_remove(similarity, '%') %>% as.numeric()) %>%
+          mutate(chrom = .y)) %>%
     bind_rows() %>%
-    distinct()
+    distinct() %>%
+    group_by(chrom) %>%
+    arrange(start) %>%
+    mutate(chrom_clust_num = row_number()) %>%
+    ungroup() %>% 
+    mutate(cluster_blast_key = str_glue('{chrom}_c{chrom_clust_num}.txt'))
   cluster_blasts = list.files(paste0(antismash_directory, '/clusterblast'), full.names = T) %>%
     map(~read_lines(.x, skip=3) %>%
           tibble(text = .) %>%
           filter(cumsum(str_detect(text, 'Significant hits:')) < 1) %>%
           mutate(filename = .x)) %>%
     bind_rows()
-  region_chrom_and_gene = cluster_blasts %>%
+  genes_in_clusters = cluster_blasts %>%
     filter(text != '') %>%
     mutate(gene_id = str_remove(text, '\t.*'),
-           chrom = str_replace(filename, '.*/(.*?)_c\\d+.txt', '\\1'),
-           cluster_num = str_replace(filename, '.*/.*?_c(\\d+).txt', '\\1')) %>%
-    select(-text, -filename) %>%
-    group_by(chrom) %>%
-    mutate(chrom_num = if_else(row_number() == 1, 1, 0)) %>%
-    ungroup() %>%
-    mutate(chrom_num = cumsum(chrom_num),
-           region = str_glue('region_{chrom_num}.{cluster_num}')) %>%
-    group_by(region) %>%
-    summarize(gene_id = str_c(gene_id, collapse=';'), chrom=first(chrom))
-  clusters %>% left_join(region_chrom_and_gene, by='region')
+           cluster_num = str_replace(filename, '.*/.*?_c(\\d+).txt', '\\1'),
+           cluster_blast_key = str_remove(filename, '.*/')) %>%
+    group_by(cluster_blast_key) %>%
+    summarize(gene_id = str_c(gene_id, collapse=';'))
+  clusters %>% left_join(genes_in_clusters, by='cluster_blast_key') %>% 
+    select(-cluster_blast_key, -chrom_clust_num)
 }
 antismash_results = parse_antismash_7(antismash_directory)
 antismash_results %>% write_csv(output_file, na='')
