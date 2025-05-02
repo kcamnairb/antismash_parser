@@ -23,7 +23,6 @@ parse_webpage = function(antismash_results){
   text =  html %>% html_text2()
   chroms = str_match_all(text, '\\n(?<chrom>.+?)\\nRegion Type From To')[[1]] %>%
     as_tibble(.name_repair='unique') %>% pull(chrom) %>% str_remove(' .*|\\(.*')
-  #chroms = chroms[1:length(chroms)-1]
   tables = html %>% html_table()
   clusters = tables[1:length(chroms)]
   names(clusters) = chroms
@@ -33,7 +32,6 @@ parse_webpage = function(antismash_results){
           mutate(region = str_replace(region, 'Region&nbsp', 'region_') %>%
                    str_replace('Region\\s', 'region_')) %>%
           mutate(across(c(start, end), ~str_remove_all(.x, ',') %>% as.numeric())) %>%
-          #mutate(similarity = str_remove(similarity, '%') %>% as.numeric()) %>%
           mutate(chrom = .y)) %>%
     bind_rows() %>%
     distinct() %>%

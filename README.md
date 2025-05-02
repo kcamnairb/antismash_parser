@@ -6,7 +6,7 @@ in bacterial and fungal genomes. The summary csv file contains information on th
 cluster number, type, coordinates, the genes in the cluster, and the most similar
 known cluster for each gene cluster. If a directory is give as input, the genes 
 in each cluster will also be reported in the summary file. An optional bed file 
-can also be created. This is able to parse results from antismash v5 - v7.
+can also be created. This is able to parse results from antismash v5 - v8.
 
 ## Installation
 
