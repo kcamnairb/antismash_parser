@@ -21,7 +21,7 @@ parse_webpage = function(antismash_results){
     html = read_html(antismash_results)
   }
   text =  html %>% html_text2()
-  chroms = str_match_all(text, '\\n(?<chrom>.+?)\\nRegion Type From To Most')[[1]] %>%
+  chroms = str_match_all(text, '\\n(?<chrom>.+?)\\nRegion Type From To')[[1]] %>%
     as_tibble(.name_repair='unique') %>% pull(chrom) %>% str_remove(' .*|\\(.*')
   #chroms = chroms[1:length(chroms)-1]
   tables = html %>% html_table()
@@ -30,13 +30,16 @@ parse_webpage = function(antismash_results){
   clusters = clusters %>%
     imap(~janitor::clean_names(.x) %>%
           rename(backbone_type = most_similar_known_cluster_2, start=from, end=to) %>%
-          mutate(region = str_replace(region, 'Region&nbsp', 'region_')) %>%
+          mutate(region = str_replace(region, 'Region&nbsp', 'region_') %>%
+                   str_replace('Region\\s', 'region_')) %>%
           mutate(across(c(start, end), ~str_remove_all(.x, ',') %>% as.numeric())) %>%
-          mutate(similarity = str_remove(similarity, '%') %>% as.numeric()) %>%
+          #mutate(similarity = str_remove(similarity, '%') %>% as.numeric()) %>%
           mutate(chrom = .y)) %>%
     bind_rows() %>%
     distinct() %>%
-    arrange(chrom, start)
+    arrange(chrom, start) %>%
+    relocate(most_similar_known_cluster, .after = end) %>%
+    rename_with(~str_remove(.x, '_confidence'))
   return(clusters)
 }
 get_genes_in_clusters = function(antismash_directory){
